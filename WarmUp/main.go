@@ -1,6 +1,7 @@
 package main
 
 import (
+	"WarmUp/config"
 	"WarmUp/router"
 	"WarmUp/util"
 
@@ -8,6 +9,7 @@ import (
 )
 
 func main() {
+	config.ReadIn()
 	// 连接数据库
 	util.ConnectDB()
 	// 开始服务

@@ -39,13 +39,14 @@ func CheckSession(cookie string) (*UserSignInResponse, error) {
 		log.Printf("[info]model-SessionID已经过期")
 		return nil, errors.New("SessionID已经过期")
 	}
-	// userIdStr := RedisClient.HGet(RedisCtx, sessionID, "userID").Val()
-	// userId64, _ := strconv.ParseUint(userIdStr, 10, 64)
 	userId64, _ := RedisClient.HGet(RedisCtx, sessionID, "userID").Uint64()
-
 	userResponse.ID = uint(userId64)
 	// 检查是否是管理员
 	userResponse.IsAdmin, _ = RedisClient.HGet(RedisCtx, sessionID, "isAdmin").Bool()
-
+	// 每次成功校验，进行 Session 的延期
+	if err := RedisClient.HSet(RedisCtx, sessionID, "expiresAt", time.Now().Add(time.Hour).Unix()).Err(); err != nil {
+		log.Printf("[error]model-CheckSession:延期错误%v\n", err.Error())
+		return nil, err
+	}
 	return userResponse, nil
 }
