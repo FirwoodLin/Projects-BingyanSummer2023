@@ -28,6 +28,7 @@ type UserRequset struct {
 	Tel      string `validate:"required,e164" json:"tel"` // E.164 标准:国际关于手机号的规范
 	Nickname string `validate:"required,max=20" json:"nickname"`
 	ID       uint   `json:"-"`
+	IsAdmin  bool   `json:"-"`
 }
 type UserUpdateRequset struct {
 	Name     string `validate:"omitempty,min=3,max=20" json:"name,omitempty"`
@@ -41,6 +42,19 @@ type UserSignInRequest struct {
 	// ID       string `json:"-"`
 	Email    string `validate:"required,email" json:"email"`
 	Password string `validate:"required,min=8,max=20" json:"password"`
+}
+type UserSignInResponse struct {
+	ID      uint
+	IsAdmin bool
+}
+
+type UserQueryResponse struct {
+	Name     string `json:"name"`
+	Nickname string `json:"nickname"`
+	Email    string `json:"email"`
+	Tel      string `json:"tel"`
+	IsAdmin  bool   `json:"is_admin"`
+	ID       uint   `json:"id"`
 }
 
 func ConvertUserRequestToUser(req *UserRequset) *User {

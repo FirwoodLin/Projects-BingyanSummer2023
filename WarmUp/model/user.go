@@ -54,8 +54,8 @@ func CreateUser(userReq *UserRequset) (err error) {
 	return nil
 }
 
-// CheckUser 用户登录时 检查邮箱是否存在 邮箱密码是否一致
-func CheckUser(userSReq *UserSignInRequest) (Id uint, err error) {
+// CheckUser 用户登录时 检查邮箱是否存在 邮箱密码是否一致 **是否是管理员**
+func CheckUser(userSReq *UserSignInRequest) (userResponse *UserSignInResponse, err error) {
 	// 检查邮箱是否存在
 	var user User
 	// user = new(User)
@@ -63,19 +63,21 @@ func CheckUser(userSReq *UserSignInRequest) (Id uint, err error) {
 	result := DB.Where("email = ?", userSReq.Email).First(&user)
 	if result.RowsAffected == 0 {
 		log.Printf("[info]model-邮箱不存在%v\n", userSReq.Email)
-		return 0, errors.New("该邮箱未注册")
+		return nil, errors.New("该邮箱未注册")
 	}
 	// userSReq.ID = user.ID
 	// 检查密码是否一致
 	if err := bcrypt.CompareHashAndPassword([]byte(user.HashedPassword), []byte(userSReq.Password)); err != nil {
 		log.Printf("[info]model-密码不一致%v\n", userSReq.Email)
-		return 0, errors.New("密码不一致")
+		return nil, errors.New("密码不一致")
 	}
-	return user.ID, nil
+	log.Printf("[info]model-CheckUser,user:%v\n", user)
+	userResponse = &UserSignInResponse{ID: user.ID, IsAdmin: user.IsAdmin}
+	return userResponse, nil
 }
 
 func UpdateUser(userReq *UserUpdateRequset) {
-	// user := ConvertUserUpdateRequsetToUser(userReq)
+	// user := ConvertUserUpdateRequestToUser(userReq)
 	user := &User{}
 	user.ID = userReq.ID
 	log.Printf("[info]model-UpdateUser,user:%v\n", user)
@@ -88,4 +90,43 @@ func UpdateUser(userReq *UserUpdateRequset) {
 		userReq.Password = string(hashedPasswordByte)
 	}
 	DB.Model(user).Updates(userReq)
+}
+
+// DeleteUser 删除用户
+func DeleteUser(userId uint) (err error) {
+	err = DB.Delete(&User{}, userId).Error
+	if err != nil {
+		log.Printf("[error]model-DeleteUser,%v\n", err.Error())
+		return err
+	}
+	log.Printf("[info]model-DeleteUser,delete userid:%v\n", userId)
+
+	return nil
+}
+
+// QueryOneUser 查询某个用户的信息
+func QueryOneUser(userId uint) (*UserQueryResponse, error) {
+	var userResponse UserQueryResponse
+	// 查询单条记录要注意添加 Where 条件
+	// 使用 Select 方法，避免进行模型间的转化
+	if err := DB.Table("users").Where("id=?", userId).Select("name,nickname,email,tel,is_admin,id").First(&userResponse).Error; err != nil {
+		log.Printf("[error]model-QueryOneUser,%v\n", err.Error())
+		return nil, err
+	}
+
+	return &userResponse, nil
+}
+
+// QueryUsers 查询所有人的信息
+func QueryUsers() (*[]UserQueryResponse, error) {
+	var users []UserQueryResponse
+	//if err := DB.Find(&users).Error; err != nil {
+	//	log.Printf("[error]model-QueryUsers,%v", err.Error())
+	//	return nil, err
+	//}
+	if err := DB.Table("users").Select("name,nickname,email,tel,is_admin,id").Scan(&users).Error; err != nil {
+		log.Printf("[error]model-QueryUsers,%v", err.Error())
+		return nil, err
+	}
+	return &users, nil
 }
