@@ -1,0 +1,11 @@
+Mysql:
+  host :
+  port:
+  user:
+  password:
+  charset:
+  database:
+Redis:
+  addr:
+  password:
+  DB:
