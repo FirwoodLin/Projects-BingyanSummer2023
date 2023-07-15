@@ -37,7 +37,7 @@ func Register(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.SetCookie("SESSIONID", sessionID, 60*60, "/", "localhost", false, true)
+	c.SetCookie("SESSIONID", sessionID, 60*60, "/", "localhost", false, false)
 	c.JSON(http.StatusOK, gin.H{"sessionID": sessionID, "userID": userReq.UserID})
 }
 
@@ -63,7 +63,7 @@ func SignIn(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.SetCookie("SESSIONID", sessionID, 60*60, "/", "localhost", false, true)
+	c.SetCookie("SESSIONID", sessionID, 60*60, "/", "localhost", false, false)
 	c.JSON(http.StatusOK, gin.H{"sessionID": sessionID})
 }
 
@@ -87,8 +87,8 @@ func DeleteUser(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "没有删除权限"})
 		return
 	}
-	deteleIdStr := c.Param("id")
-	deleteId, _ := strconv.ParseUint(deteleIdStr, 10, 64)
+	deleteIdStr := c.Param("id")
+	deleteId, _ := strconv.ParseUint(deleteIdStr, 10, 64)
 	if err := model.DeleteUser(uint(deleteId)); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -100,16 +100,17 @@ func DeleteUser(c *gin.Context) {
 func QueryOneUser(c *gin.Context) {
 	queryIdStr := c.Param("id")
 	queryId, _ := strconv.ParseUint(queryIdStr, 10, 64)
-	if queryId != c.GetUint64("UserID") && !c.GetBool("IsAdmin") {
-		// 不是本人，也不是管理员
-		c.JSON(http.StatusForbidden, gin.H{"error": "无查询权限"})
-		return
-	}
+	// 权限管理 - 只有本人能够查看 - Deprecated
+	//if queryId != c.GetUint64("UserID") && !c.GetBool("IsAdmin") {
+	//	// 不是本人，也不是管理员
+	//	c.JSON(http.StatusForbidden, gin.H{"error": "无查询权限"})
+	//	return
+	//}
 	userResponse, err := model.QueryOneUser(uint(queryId))
 
 	if err != nil {
 		// 数据库查询出错
-		c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, userResponse)

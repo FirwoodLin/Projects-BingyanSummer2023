@@ -3,6 +3,7 @@ package controller
 import (
 	"OnlineShop/model"
 	"OnlineShop/model/request"
+	"OnlineShop/util"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
@@ -63,12 +64,12 @@ func GetGoodsInfo(c *gin.Context) {
 	})
 }
 
-/*
 // UpdateGoodsPic 更新商品图片
 func UpdateGoodsPic(c *gin.Context) {
 	// 获取商品 ID
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 64)
+	log.Printf("[info]UpdateGoodsPic:解析商品ID:%v\n", id)
 	if err != nil {
 		log.Printf("[error]controller:UpdateGoodsPic-解析参数错误:%v\n", err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -86,7 +87,7 @@ func UpdateGoodsPic(c *gin.Context) {
 		return
 	}
 	// 上传图片;返回原图和缩略图的地址 bundle
-	uri,err := util.UploadFile(file)
+	uriBundle, err := util.UploadFile(file)
 	if err != nil {
 		log.Printf("[error]controller:UpdateGoodsPic-保存图片错误:%v\n", err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -95,7 +96,7 @@ func UpdateGoodsPic(c *gin.Context) {
 		return
 	}
 	// 更新数据库中的图片地址
-	err = model.UpdateGoodsPic(uint(id), uri)
+	err = model.UpdateGoodsPic(uint(id), &uriBundle)
 	if err != nil {
 		log.Printf("[error]controller:UpdateGoodsPic-更新数据库错误:%v\n", err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -103,5 +104,8 @@ func UpdateGoodsPic(c *gin.Context) {
 		})
 		return
 	}
+	//c.JSON(http.StatusOK, gin.H{
 	c.JSON(http.StatusOK, gin.H{
-}*/
+		"status": "success",
+	})
+}

@@ -1,6 +1,8 @@
 package model
 
-import "OnlineShop/model/request"
+import (
+	"OnlineShop/model/request"
+)
 
 type Goods struct {
 	TimeModel
@@ -16,8 +18,12 @@ type Goods struct {
 	/*进行外键关联*/
 	CategoryID uint
 	Category   Category
-	UserID     uint
+	UserID     uint // 持有人/Seller
 	User       User
+}
+type UriBundle struct {
+	OriginPicUri     string
+	CompressedPicUri string
 }
 
 // QueryGoods 按照名称和分类查询商品
@@ -41,8 +47,14 @@ func GetGoodsInfo(id uint) (goods Goods, err error) {
 	return
 }
 
-// UpdateGoodsPic 更新商品图片
-func UpdateGoodsPic(id uint, picMain, picThumbnail string) (err error) {
-	err = DBSql.Model(&Goods{}).Where("goods_id = ?", id).Updates(map[string]interface{}{"pic_main": picMain, "pic_thumbnail": picThumbnail}).Error
+// UpdateGoodsPic 更新商品图片 : 延期上线
+func UpdateGoodsPic(id uint, uriBundle *UriBundle) (err error) {
+	err = DBSql.Model(&Goods{}).Where("goods_id = ?", id).Updates(map[string]interface{}{"pic_main": uriBundle.OriginPicUri, "pic_thumbnail": uriBundle.CompressedPicUri}).Error
+	return
+}
+
+// QueryGoodsInfo 根据商品ID查询商品信息
+func QueryGoodsInfo(id uint) (goods Goods, err error) {
+	err = DBSql.Where("goods_id = ?", id).First(&goods).Error
 	return
 }

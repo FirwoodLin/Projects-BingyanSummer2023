@@ -9,7 +9,7 @@ import (
 )
 
 // Register 注册用户 - 调用查重函数和创建用户函数
-func Register(userReq *UserRequset) (err error) {
+func Register(userReq *UserRequest) (err error) {
 	// 检验数据是否合规
 	validate := validator.New()
 	if err := validate.Struct(userReq); err != nil {
@@ -36,7 +36,7 @@ func IsExistUser(name, email string) bool {
 }
 
 // CreateUser 创建用户
-func CreateUser(userReq *UserRequset) (err error) {
+func CreateUser(userReq *UserRequest) (err error) {
 	user := ConvertUserRequestToUser(userReq)
 	// 密码加密
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userReq.Password), 10)
@@ -76,7 +76,7 @@ func CheckUser(userSReq *UserSignInRequest) (userResponse *UserSignInResponse, e
 	return userResponse, nil
 }
 
-func UpdateUser(userReq *UserUpdateRequset) {
+func UpdateUser(userReq *UserUpdateRequest) {
 	// user := ConvertUserUpdateRequestToUser(userReq)
 	user := &User{}
 	user.ID = userReq.ID

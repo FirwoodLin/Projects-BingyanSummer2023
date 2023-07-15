@@ -14,7 +14,7 @@ import (
 
 // Register 用户注册
 func Register(c *gin.Context) {
-	var userReq model.UserRequset
+	var userReq model.UserRequest
 	// 解析请求体；使用 BindJson 简化流程
 	if err := c.BindJSON(&userReq); err != nil {
 		// err.Error 返回的是 字符串形式的错误信息
@@ -67,7 +67,7 @@ func SignIn(c *gin.Context) {
 
 // UpdateUser 更新用户信息
 func UpdateUser(c *gin.Context) {
-	var userReq model.UserUpdateRequset
+	var userReq model.UserUpdateRequest
 	if err := c.BindJSON(&userReq); err != nil {
 		log.Printf("[error]controller:更新用户信息-BindJson出错%v\n", err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

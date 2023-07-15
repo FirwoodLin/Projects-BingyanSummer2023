@@ -24,6 +24,7 @@ func InsertSession(userResponse *response.UserSignInResponse, sessionId string) 
 			return err
 		}
 	}
+	log.Printf("[info]auth-InsertSession:插入session成功,%v", sessionHashKey)
 	return nil
 }
 func CheckSession(cookie string) (*response.UserSignInResponse, error) {
@@ -31,7 +32,8 @@ func CheckSession(cookie string) (*response.UserSignInResponse, error) {
 	userResponse := &response.UserSignInResponse{}
 	sessionID := "session:" + cookie
 	if RedisClient.Exists(RedisCtx, sessionID).Val() == 0 {
-		return nil, errors.New("不存在 SessionID")
+		log.Printf("[info]model-SessionID 不存在:%v\n", sessionID)
+		return nil, errors.New("SessionID 不存在 ")
 	}
 	// 检验是否过期
 	expiresAtStr := RedisClient.HGet(RedisCtx, sessionID, "expiresAt").Val()

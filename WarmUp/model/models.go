@@ -21,7 +21,7 @@ type User struct {
 	// ID             uint `gorm:"primarykey"`
 	gorm.Model
 }
-type UserRequset struct {
+type UserRequest struct {
 	Name     string `validate:"required,min=3,max=20" json:"name"`
 	Password string `validate:"required,min=8,max=20" json:"password"`
 	Email    string `validate:"required,email" json:"email"`
@@ -30,7 +30,7 @@ type UserRequset struct {
 	ID       uint   `json:"-"`
 	IsAdmin  bool   `json:"-"`
 }
-type UserUpdateRequset struct {
+type UserUpdateRequest struct {
 	Name     string `validate:"omitempty,min=3,max=20" json:"name,omitempty"`
 	Password string `validate:"omitempty,min=8,max=20" json:"password,omitempty"`
 	Email    string `validate:"omitempty,email" json:"email,omitempty"`
@@ -57,7 +57,7 @@ type UserQueryResponse struct {
 	ID       uint   `json:"id"`
 }
 
-func ConvertUserRequestToUser(req *UserRequset) *User {
+func ConvertUserRequestToUser(req *UserRequest) *User {
 	user := &User{}
 	user.Name = req.Name
 	user.Nickname = req.Nickname
@@ -66,7 +66,7 @@ func ConvertUserRequestToUser(req *UserRequset) *User {
 	return user
 }
 
-// func ConvertUserUpdateRequsetToUser(req *UserUpdateRequset) *User {
+// func ConvertUserUpdateRequsetToUser(req *UserUpdateRequest) *User {
 // 	user := &User{}
 // 	user.Name = req.Name
 // 	user.Nickname = req.Nickname

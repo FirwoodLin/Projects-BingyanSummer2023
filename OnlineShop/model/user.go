@@ -10,20 +10,6 @@ import (
 	"log"
 )
 
-/*
-		type User struct {
-		TimeModel
-		UserID         uint   `gorm:"primarykey"` // 使用 UserID 而非 UserId
-		Name           string `gorm:"type:varchar(20);unique"`
-		Nickname       string `gorm:"type:varchar(20)"`
-		Email          string `gorm:"type:varchar(100);unique"`
-		Tel            string `gorm:"type:varchar(20);unique"`
-		HashedPassword string `gorm:"size:60"`
-		IsAdmin        bool
-		Addresses      []Address
-		//Addresses []Address `gorm:"foreignKey:UserID"`
-	}
-*/
 type User struct {
 	TimeModel
 	UserID         uint   `gorm:"primarykey"` // 使用 UserID 而非 UserId
@@ -32,6 +18,7 @@ type User struct {
 	Email          string `gorm:"type:varchar(100);unique" validate:"required,email,max=100"`
 	Tel            string `gorm:"type:varchar(20);unique" validate:"omitempty,e164,max=20"`
 	HashedPassword string `gorm:"size:60" validate:"required,len=60"`
+	ViewCount      int    // 新增“浏览量”字段
 	IsAdmin        bool
 	Addresses      []Address
 	//Addresses []Address `gorm:"foreignKey:UserID"`
@@ -141,15 +128,24 @@ func DeleteUser(userId uint) (err error) {
 	return nil
 }
 
-// QueryOneUser 查询某个用户的信息
-func QueryOneUser(userId uint) (*response.UserQueryResponse, error) {
+// QueryOneUser 查询某个用户的信息 -- 查看个人主页
+func QueryOneUser(userID uint) (*response.UserQueryResponse, error) {
 	var userResponse response.UserQueryResponse
-	// 查询单条记录要注意添加 Where 条件
-	// 使用 Select 方法，避免进行模型间的转化
-	if err := DBSql.Table("users").Where("id=?", userId).Select("name,nickname,email,tel,is_admin,id").First(&userResponse).Error; err != nil {
-		log.Printf("[error]model-QueryOneUser,%v\n", err.Error())
+	var user User
+	db := DBSql.Model(&User{})
+	// 使用手动 SELECT 方法在面临字段更改时会很麻烦
+	//if err := db.Where("user_id=?", userID).Select("name,nickname,email,tel,is_admin,user_id,").First(&userResponse).Error; err != nil {
+	//	log.Printf("[error]model-QueryOneUser,%v\n", err.Error())
+	//	return nil, err
+	//}
+	user.UserID = userID
+	if err := db.Find(&user).Error; err != nil {
+		log.Printf("[error]model-QueryOneUser:查找不到用户,ID:%v", user.UserID)
 		return nil, err
 	}
-
+	_ = copier.Copy(&userResponse, &user)
+	// 增加浏览量
+	user.ViewCount += 1
+	db.Save(&user)
 	return &userResponse, nil
 }
