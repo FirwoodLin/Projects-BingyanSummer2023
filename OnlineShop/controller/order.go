@@ -2,23 +2,35 @@ package controller
 
 import (
 	"OnlineShop/model"
-	"OnlineShop/model/request"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/copier"
+	"log"
 	"net/http"
 )
 
 func SubmitOrder(c *gin.Context) {
-	var orderReq request.SubmitOrderRequest
+	// 创建订单
 	var order model.Order
-	err := c.BindJSON(&orderReq)
+	err := c.BindJSON(&order)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"status": err.Error(),
 		})
 		return
 	}
-	_ = copier.Copy(&order, &orderReq)
-	orderReq.UserID = uint(c.GetInt("userID"))
-	//model.
+	order.BuyerID = c.GetUint("UserID")
+	if err := model.SubmitOrder(&order); err != nil {
+		log.Printf("[error]controller-SubmitOrder:%v\n", err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status": err.Error(),
+		})
+		return
+	}
+
+	// 开始支付
+	// TODO: 支付接口
+	c.JSON(http.StatusOK, gin.H{
+		"status":  "success",
+		"orderID": order.OrderID,
+	})
+
 }

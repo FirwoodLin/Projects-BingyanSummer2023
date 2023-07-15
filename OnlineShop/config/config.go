@@ -20,9 +20,15 @@ type RedisConfig struct {
 	DB       int    `mapstructure:"DB"`
 }
 
+type COSConfig struct {
+	Url       string `mapstructure:"url"`
+	SecretID  string `mapstructure:"SecretID"`
+	SecretKey string `mapstructure:"SecretKey"`
+}
 type Config struct {
 	MySQL MySQLConfig `mapstructure:"Mysql"`
 	Redis RedisConfig `mapstructure:"Redis"`
+	COS   COSConfig   `mapstructure:"COS"`
 }
 
 var ProjectConfig Config
